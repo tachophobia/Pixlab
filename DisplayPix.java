@@ -11,7 +11,7 @@ import javax.swing.*;
 public class DisplayPix extends JPanel {
    private PixelOperations pix = new PixelOperations();
 
-   private ImageIcon i = new ImageIcon("images/beach.jpg");
+   private ImageIcon i = new ImageIcon("images/swan.jpg");
    private ImageIcon message = new ImageIcon("images/msg.jpg"); // for encoder/decoder
    private ImageIcon moon = new ImageIcon("images/moon-surface.jpg"); // for chromakey
 

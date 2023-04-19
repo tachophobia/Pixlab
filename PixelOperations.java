@@ -248,6 +248,29 @@ public class PixelOperations {
       }
    }
 
+   public void sunsetize(Color[][] arr) {
+      // decrease the green and blue values by 20%
+
+      for (int i = 0; i < arr.length; i++) {
+         for (int j = 0; j < arr[i].length; j++) {
+            Color tmp = arr[i][j];
+            int r = tmp.getRed();
+            int g = tmp.getGreen();
+            int b = tmp.getBlue();
+            g = (int) (g * .8);
+            b = (int) (b * .8);
+            arr[i][j] = new Color(r, g, b);
+         }
+      }
+   }
+
+   public void redeye(Color[][] arr) {
+      // TODO: implement this method
+   }
+
+   public void detect(Color[][] arr) {
+      // TODO: implement this method
+   }
 }
 
 //
