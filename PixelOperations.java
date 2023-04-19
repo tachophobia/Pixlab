@@ -223,10 +223,29 @@ public class PixelOperations {
       try {
          size = Integer.parseInt(JOptionPane.showInputDialog("Enter the size of the pixelation"));
       } catch (Exception e) {
-         JOptionPane.showMessageDialog(null, "Invalid input");
+         JOptionPane.showMessageDialog(null, "Invalid input. Please enter an integer");
          return;
       }
-      // pixelate the image by the size of the pixelation
+      // pixelate the image by variable size.
+
+      for (int i = 0; i < arr.length; i += size) {
+         for (int j = 0; j < arr[i].length; j += size) {
+            Color tmp = arr[i][j];
+            int r = tmp.getRed();
+            int g = tmp.getGreen();
+            int b = tmp.getBlue();
+            try {
+               for (int k = i; k < i + size; k++) {
+                  for (int l = j; l < j + size; l++) {
+                     arr[k][l] = new Color(r, g, b);
+                  }
+               }
+            } catch (Exception e) {
+
+            }
+
+         }
+      }
    }
 
 }
