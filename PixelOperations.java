@@ -265,14 +265,168 @@ public class PixelOperations {
    }
 
    public void redeye(Color[][] arr) {
-      // TODO: implement this method
+      for (int i = 0; i < arr.length; i++) {
+         for (int j = 0; j < arr[i].length; j++) {
+            Color tmp = arr[i][j];
+            int r = tmp.getRed();
+            int g = tmp.getGreen();
+            int b = tmp.getBlue();
+
+            float redIntensity = ((float) r / ((g + b) / 2));
+            if (redIntensity > 1.5f && i > 420 && i < 470 && j < 1000 && j > 600) {
+               arr[i][j] = new Color((g + b) / 2, g, b);
+            }
+
+         }
+      }
+
    }
 
    public void detect(Color[][] arr) {
+      // canny edge detection implementation
+      gaussianFilter(arr, 4, 8);
+      grayScale(arr);
+
+      double[][][] gradient = getGradient(arr);
+      double[][] magnitude = gradient[0];
+      double[][] direction = gradient[1];
+      // apply hysteresis thresholding
+      int[][] edges = hysteresisThresholding(magnitude, direction, 30., 50.);
+
+      for (int i = 0; i < arr.length; i++) {
+         for (int j = 0; j < arr[i].length; j++) {
+            if (edges[i][j] == 0) {
+               arr[i][j] = Color.BLACK;
+            } else {
+               arr[i][j] = Color.WHITE;
+            }
+         }
+      }
+   }
+
+   public int[][] hysteresisThresholding(double[][] magnitude, double[][] direction, double lowThreshold,
+         double highThreshold) {
+      int height = magnitude.length;
+      int width = magnitude[0].length;
+      int[][] edgeMap = new int[height][width];
+
+      // apply high threshold to mark out strong edges
+      for (int i = 0; i < height; i++) {
+         for (int j = 0; j < width; j++) {
+            if (magnitude[i][j] >= highThreshold) {
+               edgeMap[i][j] = 255;
+            }
+         }
+      }
+
+      // trace edges using low threshold and connectivity test
+      for (int i = 1; i < height - 1; i++) {
+         for (int j = 1; j < width - 1; j++) {
+            if (magnitude[i][j] >= lowThreshold && edgeMap[i][j] == 0) {
+               double angle = direction[i][j] * 180 / Math.PI;
+               angle = angle < 0 ? angle + 180 : angle;
+               int q = 0, r = 0;
+               if ((0 <= angle && angle < 22.5) || (157.5 <= angle && angle <= 180)) {
+                  q = i;
+                  r = j + 1;
+               } else if (22.5 <= angle && angle < 67.5) {
+                  q = i + 1;
+                  r = j + 1;
+               } else if (67.5 <= angle && angle < 112.5) {
+                  q = i + 1;
+                  r = j;
+               } else if (112.5 <= angle && angle < 157.5) {
+                  q = i + 1;
+                  r = j - 1;
+               }
+               if (edgeMap[q][r] == 255) {
+                  edgeMap[i][j] = 255;
+               } else {
+                  edgeMap[i][j] = 0;
+               }
+            }
+         }
+      }
+      return edgeMap;
+   }
+
+   public double[][][] getGradient(Color[][] arr) {
+      int height = arr.length;
+      int width = arr[0].length;
+      double[][][] gradient = new double[2][height][width];
+      double[][] gx = { { -1, 0, 1 }, { -2, 0, 2 }, { -1, 0, 1 } };
+      double[][] gy = { { -1, -2, -1 }, { 0, 0, 0 }, { 1, 2, 1 } };
+
+      for (int i = 1; i < height - 1; i++) {
+         for (int j = 1; j < width - 1; j++) {
+            double sumX = 0;
+            double sumY = 0;
+            for (int k = -1; k <= 1; k++) {
+               for (int l = -1; l <= 1; l++) {
+                  Color c = arr[i + k][j + l];
+                  double intensity = c.getRed() * 0.299 + c.getGreen() * 0.587 + c.getBlue() * 0.114;
+                  sumX += gx[k + 1][l + 1] * intensity;
+                  sumY += gy[k + 1][l + 1] * intensity;
+               }
+            }
+            double magnitude = Math.sqrt(sumX * sumX + sumY * sumY);
+            double direction = Math.atan2(sumY, sumX);
+            gradient[0][i][j] = magnitude;
+            gradient[1][i][j] = direction;
+         }
+      }
+      return gradient;
+   }
+
+   private void gaussianFilter(Color[][] arr, int k, double sigma) {
+      // calculate kernel
+      double[][] kernel = new double[k][k];
+      double sum = 0;
+      for (int i = 0; i < k; i++) {
+         for (int j = 0; j < k; j++) {
+            kernel[i][j] = Math.exp(-(Math.pow(i - (k + 1), 2) + Math.pow(j - (k + 1), 2)) / (2 * Math.pow(sigma, 2)))
+                  / (2 * Math.PI * Math.pow(sigma, 2));
+            sum += kernel[i][j];
+         }
+      }
+      // normalize kernel
+      for (int i = 0; i < k; i++) {
+         for (int j = 0; j < k; j++) {
+            kernel[i][j] /= sum;
+         }
+      }
+      // apply kernel to image
+      for (int i = 0; i < arr.length; i++) {
+         for (int j = 0; j < arr[i].length; j++) {
+            int r = 0, g = 0, b = 0;
+            for (int m = -k / 2; m < k / 2; m++) {
+               for (int n = -k / 2; n < k / 2; n++) {
+                  if (i + m >= 0 && i + m < arr.length && j + n >= 0 && j + n < arr[i].length) {
+                     Color c = arr[i + m][j + n];
+                     r += c.getRed() * kernel[m + k / 2][n + k / 2];
+                     g += c.getGreen() * kernel[m + k / 2][n + k / 2];
+                     b += c.getBlue() * kernel[m + k / 2][n + k / 2];
+                  }
+               }
+            }
+            Color c = new Color(Math.min(r, 255), Math.min(g, 255), Math.min(b, 255));
+            arr[i][j] = c;
+         }
+      }
+   }
+
+   public void encode(Color[][] arr) {
+      // TODO: implement this method
+   }
+
+   public void decode(Color[][] arr) {
+      // TODO: implement this method
+   }
+
+   public void chromakey(Color[][] arr) {
       // TODO: implement this method
    }
 }
-
 //
 // end of file
 //
