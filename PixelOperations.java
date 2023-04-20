@@ -415,8 +415,24 @@ public class PixelOperations {
       }
    }
 
-   public void encode(Color[][] arr) {
-      // TODO: implement this method
+   public void encode(Color[][] arr, Color[][] msg) {
+      // change all red values to an even value
+      for (int i = 0; i < arr.length; i++) {
+         for (int j = 0; j < arr[i].length; j++) {
+            Color c = arr[i][j];
+            int r = c.getRed();
+            if (r % 2 == 0) {
+               arr[i][j] = new Color(r, c.getGreen(), c.getBlue());
+            } else {
+               arr[i][j] = new Color(r + 1 < 255 ? r + 1 : r - 1, c.getGreen(), c.getBlue());
+            }
+            // add message to image
+            if (i < msg.length && j < msg[i].length && msg[i][j].getRed() != 0) {
+               arr[i][j] = new Color(msg[i][j].getRed(), msg[i][j].getGreen(), msg[i][j].getBlue());
+            }
+         }
+
+      }
    }
 
    public void decode(Color[][] arr) {

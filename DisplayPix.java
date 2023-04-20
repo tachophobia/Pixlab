@@ -11,8 +11,8 @@ import javax.swing.*;
 public class DisplayPix extends JPanel {
    private PixelOperations pix = new PixelOperations();
 
-   private ImageIcon i = new ImageIcon("images/swan.jpg");
-   private ImageIcon message = new ImageIcon("images/msg.jpg"); // for encoder/decoder
+   public Color[][] message;
+   private ImageIcon i = new ImageIcon("images/beach.jpg");
    private ImageIcon moon = new ImageIcon("images/moon-surface.jpg"); // for chromakey
 
    private BufferedImage img = new BufferedImage(1600, 1200, BufferedImage.TYPE_INT_RGB);
@@ -162,7 +162,7 @@ public class DisplayPix extends JPanel {
 
    public void encode() {
       Color[][] tmp = pix.getArray(img);
-      pix.encode(tmp);
+      pix.encode(tmp, message);
       pix.setImage(img, tmp);
    }
 
@@ -176,6 +176,10 @@ public class DisplayPix extends JPanel {
       Color[][] tmp = pix.getArray(img);
       pix.chromakey(tmp);
       pix.setImage(img, tmp);
+   }
+
+   public void setAsMsg() {
+      message = pix.getArray(img);
    }
 
    /**********************************************************************/

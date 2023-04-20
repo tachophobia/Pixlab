@@ -124,6 +124,12 @@ public class PanelPix extends JPanel {
       JButton undo = new JButton("Undo");
       undo.setEnabled(false);
       south.add(undo);
+
+      JButton setAsMsg = new JButton("Set as Message");
+      setAsMsg.addActionListener(new Listener_setAsMsg());
+
+      south.add(setAsMsg);
+
       add(south, BorderLayout.SOUTH);
    }
 
@@ -257,6 +263,12 @@ public class PanelPix extends JPanel {
       public void actionPerformed(ActionEvent e) {
          display.chromakey();
          update(display.getXval(), display.getYval());
+      }
+   }
+
+   private class Listener_setAsMsg implements ActionListener {
+      public void actionPerformed(ActionEvent e) {
+         display.setAsMsg();
       }
    }
 
